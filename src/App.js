@@ -9,9 +9,7 @@ function Square({ value, handleOnClick }) {
   );
 }
 
-export default function Board() {
-  let [isXTurn,setXTurn]=useState(true);
-  const [tileContents, setTileContents] = useState(Array(9).fill(null));
+function Board({isXTurn,handleStateChange,tileContents}) {
  
   function declareWinner(){
     const consistentCells=[
@@ -24,7 +22,6 @@ export default function Board() {
       [0,4,8],
       [2,4,6]
     ];
-    console.log("checking winner");
     for(let i=0;i<consistentCells.length;i++){
       const [a,b,c] = consistentCells[i];
       if(tileContents[a] && tileContents[a]===tileContents[b] && tileContents[a]===tileContents[c])
@@ -44,8 +41,7 @@ export default function Board() {
     else
       arr[sqId]="O";
 
-    setTileContents(arr);
-    setXTurn(!isXTurn);
+    handleStateChange(arr);
   }
 
   
@@ -73,4 +69,57 @@ export default function Board() {
       </div>
     </>
   );
+}
+
+export default function Game()
+{
+  let [histories,setHistory]=useState([Array(9).fill(null)]);
+
+  const [currMove,setCurrMove]=useState(0);
+  let isXturn=currMove%2===0;
+
+  const currSquares=histories[currMove];
+
+  function handleState(nextSquares)
+  {
+    let nextHistory=[...histories.slice(0,currMove+1),nextSquares];
+    setHistory(nextHistory);
+    setCurrMove(nextHistory.length-1);
+    console.log(nextHistory);
+  }
+  
+  function jumpState(nextmove)
+  {
+      setCurrMove(nextmove);
+
+  }
+
+  const steps = histories.map((history,index)=>{
+    let btnText="";
+    if(index<1)
+        btnText="Reset Board";
+    else
+        btnText="Go to move #"+index;
+    return (
+      <li key={index}>
+        <button onClick={()=>jumpState(index)}>{btnText}</button>
+      </li>
+    );
+  }
+  );
+
+  return(
+  <div className="game">
+
+    <div className="game-board">
+      <Board isXTurn={isXturn} handleStateChange={handleState} tileContents={currSquares}/>
+    </div> 
+
+    <div className="game-history">
+      <ol>
+        {steps}
+      </ol>
+    </div>
+
+  </div>);
 }
